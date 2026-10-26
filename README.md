@@ -464,7 +464,50 @@ Phase 7  Delta Market Data Integration         🔄
 
 # Roadmap
 
-## Phase 7 — Virtual / Paper Trading
+### Phase 7 — Delta Exchange Virtual / Paper Trading
+
+**Status:** In Progress
+
+#### Completed
+
+- Step 1 — Delta Exchange live market-data connection
+- Step 2 — Latest BTCUSD candle retrieval
+- Step 3 — Real-time feature calculation
+- Step 4 — Live Lorentzian prediction
+
+#### Step 4 — Live Lorentzian Prediction
+
+The system now retrieves the latest BTCUSD candles from Delta Exchange,
+calculates the same technical indicators used during historical
+classification, and generates a live Lorentzian Classification signal.
+
+Latest feature vector:
+
+| Feature | Value |
+|---|---:|
+| RSI | 57.508731 |
+| CCI | 16.709093 |
+| WT1 | 5.662576 |
+| WT2 | 2.711408 |
+| +DI | 15.332202 |
+| -DI | 27.675821 |
+| ADX | 28.952983 |
+
+Using `K = 8` nearest neighbours, the live prediction was:
+
+**Prediction: 1 — LONG / BULLISH**
+
+This confirms that the historical Lorentzian classification pipeline
+can be connected to live Delta Exchange market data.
+
+#### Remaining Steps
+
+- Step 5 — Virtual order execution
+- Step 6 — Virtual TP/SL
+- Step 7 — Virtual P&L and trade log
+- Step 8 — Continuous paper-trading loop
+- Step 9 — Monitoring and safety checks
+- Step 10 — Phase 7 validation
 
 The next development stage will connect the live feature pipeline to the Lorentzian classifier.
 
@@ -579,10 +622,13 @@ lorentzian-classification/
 │   └── delta_client.py
 │
 ├── tests/
-│   ├── test_backtest.py
-│   ├── run_backtest.py
-│   ├── test_delta_live.py
-│   └── test_live_features.py
+├── __init__.py
+├── test_backtest.py
+├── test_delta_live.py
+├── test_latest_candles.py
+├── test_live_features.py
+├── test_live_prediction.py
+└── test_lorentzian_classifier.py
 │
 ├── .gitignore
 ├── README.md
