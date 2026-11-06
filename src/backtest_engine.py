@@ -39,31 +39,36 @@ class BacktestEngine:
         direction:
             1 for long, -1 for short
         """
+        if self.current_trade is not None:
+                raise ValueError("A trade is already open.")
+
         quantity = self.capital / price
 
         stop_loss = None
         take_profit = None
 
-        if self.current_trade is not None:
-            raise ValueError("A trade is already open.")
-
+        # Calculate stop loss
         if self.stop_loss_pct is not None:
             if direction == 1:  # Long
                 stop_loss = price * (1 - self.stop_loss_pct/100)
             else:  # Short
                 stop_loss = price * (1 + self.stop_loss_pct/100)
 
+        # Calculate take profit
         if self.target_pct is not None:
             if direction == 1:  # Long
                 take_profit = price * (1 + self.target_pct/100)
             else:  # Short
                 take_profit = price * (1 - self.target_pct/100)
 
+        # Create the trade
         self.current_trade = Trade(
             entry_time=time,
             entry_price=price,
             direction=direction,
-            quantity=quantity
+            quantity=quantity,
+            stop_loss=stop_loss,
+            take_profit=take_profit
         )
 
     def close_position(self, time, price, reason=None):
@@ -192,7 +197,7 @@ class BacktestEngine:
         self.close_position(
             time,
             price,
-            reason="STRONG_REVARSAL"
+            reason="SIGNAL_REVERSAL"
         )
 
         # Open new position in the opposite direction
