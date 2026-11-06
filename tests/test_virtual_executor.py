@@ -86,3 +86,64 @@ def test_duplicate_signal_does_not_create_new_position():
     assert executor.current_trade.entry_price == 100, "Entry price should be 100"
     assert len(executor.trades) == 0, "There should be no completed trades"
     assert executor.capital == 5000, "Capital should remain unchanged"
+
+def test_zero_signal_does_not_change_position():
+    executor = VirtualExecutor(initial_capital=5000)
+
+    executor.execute_signal(get_time(), price=100, signal=1)  # Long
+    original_trade = executor.current_trade
+    executor.execute_signal(get_time(), 105, 0)
+
+    assert executor.current_trade is original_trade
+    assert len(executor.trades) == 0, "There should be no completed trades"
+    assert executor.capital == 5000, "Capital should remain unchanged"
+
+def test_same_price_reversal_preserves_capital():
+
+    executor = VirtualExecutor(initial_capital=5000)
+
+    executor.execute_signal(get_time(), 100, 1)
+    executor.execute_signal(get_time(), 100, -1)
+
+    assert executor.capital == 5000
+    assert len(executor.trades) == 1
+    assert executor.current_trade.direction == -1
+
+
+def test_long_reversal_calculates_correct_profit():
+
+    executor = VirtualExecutor(initial_capital=5000)
+
+    executor.execute_signal(get_time(), 100, 1)
+    executor.execute_signal(get_time(), 110, -1)
+
+    closed_trade = executor.trades[0]
+
+    assert closed_trade.profit_loss == 500
+    assert executor.capital == 5500
+
+
+def test_short_reversal_calculates_correct_profit():
+
+    executor = VirtualExecutor(initial_capital=5000)
+
+    executor.execute_signal(get_time(), 100, -1)
+    executor.execute_signal(get_time(), 90, 1)
+
+    closed_trade = executor.trades[0]
+
+    assert closed_trade.profit_loss == 500
+    assert executor.capital == 5500
+
+
+def test_new_position_quantity_uses_updated_capital():
+
+    executor = VirtualExecutor(initial_capital=5000)
+
+    executor.execute_signal(get_time(), 100, 1)
+    executor.execute_signal(get_time(), 110, -1)
+
+    new_trade = executor.current_trade
+    assert new_trade.direction == -1
+    assert executor.capital == 5500
+    assert abs(new_trade.quantity - 50) < 1e-9
